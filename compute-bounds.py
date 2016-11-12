@@ -59,7 +59,7 @@ def main(args):
         if args.pad <= 0:
             raise Exception('pad parameter should be a positive number')
         case = case.replace_phase_angle_difference(args.pad)
-
+    case = case.update_line_limits()
 
     ### WARNING ###
     # for small cases (less than 1000 buses) tighter values can be used

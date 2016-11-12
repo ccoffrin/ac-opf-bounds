@@ -107,7 +107,7 @@ class Branch(object):
     
     def __str__(self):
         data = [self.idx, self.fbus, self.tbus, self.r, self.x, self.b, self.rateA, self.rateB, self.rateC, \
-                self.ratio, self.angle, self.status, self.angmin, self.angmax]
+                self.ratio, self.angle, self.status, self.angmin, self.angmax, self.radians]
         return ' '.join([str(x) for x in data])
     
     def make_per_unit(self, baseMVA):
@@ -126,14 +126,40 @@ class Branch(object):
                         self.ratio, math.radians(self.angle), self.status, math.radians(self.angmin), math.radians(self.angmax), radians=True);
     
     def replace_phase_angle_diffrence(self, delta):
-        branch = self
-        if not branch.radians:
-            branch = branch.make_radians()
-        
-        return Branch(self.idx, branch.fbus, branch.tbus, branch.r, branch.x,  branch.b, \
-                branch.rateA, branch.rateB, branch.rateC, \
-                branch.ratio, branch.angle, branch.status, -delta, delta, branch.radians);
-        
+        if self.radians:
+            return Branch(self.idx, self.fbus, self.tbus, self.r, self.x,  self.b, \
+                    self.rateA, self.rateB, self.rateC, \
+                    self.ratio, self.angle, self.status, -delta, delta, radians=self.radians);
+        else:
+            return Branch(self.idx, self.fbus, self.tbus, self.r, self.x,  self.b, \
+                    self.rateA, self.rateB, self.rateC, \
+                    self.ratio, self.angle, self.status, -math.degrees(delta), math.degrees(delta), radians=self.radians);
+
+    def update_line_limits(self, from_Vmax, to_Vmax):
+        assert(self.radians)
+        # TODO assumes all values are in per unit! See issue #2 in Github
+
+        # compute value thermal limit UB
+        theta_max = max(abs(self.angmin), abs(self.angmax))
+
+        r = self.r
+        x = self.x
+        g =  r / (r**2 + x**2)
+        b = -x / (r**2 + x**2)
+
+        y_mag = math.sqrt(g**2 + b**2)
+
+        m_Vmax = max(from_Vmax, to_Vmax)
+
+        c_max = math.sqrt(from_Vmax**2 + to_Vmax**2 - 2*from_Vmax*to_Vmax*math.cos(theta_max))
+
+        rate_ub = y_mag*m_Vmax*c_max
+
+        if self.rateA == 0 or self.rateA > rate_ub:
+            print('warning: on line %d from bus %d to bus %d updated rateA: %f => %f' % (self.idx, self.fbus, self.tbus, self.rateA, rate_ub))
+            self.rateA = rate_ub
+
+
 
 
 class GeneratorCost(object): 
@@ -307,7 +333,20 @@ class Case(object):
     
         #return Case(self.name+'_pad', self.baseMVA, bus, gen, branch, gencost);
         return Case(self.name, self.baseMVA, bus, gen, branch, gencost);
-    
+
+    def update_line_limits(self):
+        bus = [copy.deepcopy(x) for x in self.bus]
+        gen = [copy.deepcopy(x) for x in self.gen]
+        branch = [copy.deepcopy(x) for x in self.branch]
+        gencost = [copy.deepcopy(x) for x in self.gencost]
+
+        bus_lookup = {x.bus_i:x for x in bus}
+        for b in branch:
+            from_bus = bus_lookup[b.fbus]
+            to_bus = bus_lookup[b.tbus]
+            b.update_line_limits(from_bus.Vmax, to_bus.Vmax)
+
+        return Case(self.name, self.baseMVA, bus, gen, branch, gencost);
     
     def remove_status_zero(self):
         off_bus = set([x.bus_i for x in self.bus if x.type == 4])

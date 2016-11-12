@@ -814,7 +814,6 @@ class QCModel(object):
             m.addConstr(q[fbid] == -(br.b/2 + bl)/tr2*w[fb] - (-bl*cc - gl*dd)/tr2*wr[bp] + (-gl*cc + bl*dd)/tr2*wi[bp], 'Q_'+str(fbid))
             m.addConstr(q[tbid] == -(br.b/2 + bl)*w[tb]     - (-bl*cc + gl*dd)/tr2*wr[bp] + (-gl*cc - bl*dd)/tr2*-wi[bp], 'Q_'+str(tbid))
 
-
             m.addConstr(p[fbid]*p[fbid] + q[fbid]*q[fbid] <= br.rateA**2, 's_'+str(fbid))
             m.addConstr(p[tbid]*p[tbid] + q[tbid]*q[tbid] <= br.rateA**2, 's_'+str(tbid))
 
