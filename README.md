@@ -37,6 +37,23 @@ Community-driven development and enhancement of this script are welcome and enco
 
 Although this code was developed by Carleton Coffrin, the theory behind this algorithm was done in collaboration with Hassan L. Hijazi, and Pascal Van Hentenryck.
 
+If you find this code useful in your work please cite this paper,
+```
+@Inbook{Coffrin2015,
+  author="Coffrin, Carleton
+    and Hijazi, Hassan L.
+    and Van Hentenryck, Pascal",
+  editor="Pesant, Gilles",
+  title="Strengthening Convex Relaxations with Bound Tightening for Power Network Optimization",
+  bookTitle="Principles and Practice of Constraint Programming: 21st International Conference, CP 2015, Cork, Ireland, August 31 -- September 4, 2015, Proceedings",
+  year="2015",
+  publisher="Springer International Publishing",
+  pages="39--57",
+  isbn="978-3-319-23219-5",
+  doi="10.1007/978-3-319-23219-5_4",
+  url="http://dx.doi.org/10.1007/978-3-319-23219-5_4"
+}
+```
 
 ## License
 
